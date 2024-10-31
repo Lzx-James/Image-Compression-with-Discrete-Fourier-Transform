@@ -69,6 +69,9 @@ blue_channel = DFT_Compress_iDFT(Channel=blue_coefficient, Magnitude_2d=blue_mag
 # Synthesize the new compressed image
 IMG_new = np.stack((red_channel, green_channel, blue_channel), axis=-1)
 
+# Normalize the image
+IMG_new = (IMG_new - IMG_new.min()) / (IMG_new.max() - IMG_new.min())
+
 # Display the image
 plt.imshow(IMG_new)
 plt.show()
@@ -76,3 +79,6 @@ plt.show()
 # Compute the mean squared error between the original and compressed image
 mse = np.mean((IMG - IMG_new) ** 2)
 print('Compress Ratio:', r, 'MSE:', mse)
+
+# Save the image
+plt.imsave('compressed_image\\baboon_ratio={:.3f}_mse={:.5f}.png'.format(r, mse), IMG_new)
