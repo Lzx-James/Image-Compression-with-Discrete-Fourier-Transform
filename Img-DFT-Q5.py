@@ -1,10 +1,13 @@
-# a) & b)
+# a)
 import matplotlib.pyplot as plt
+import numpy as np
 
 IMG = plt.imread('.\\baboon.png')
 
+# b)
+IMG = np.clip(IMG, 0, 1)
+
 # c)
-import numpy as np
 
 red_channel = IMG[:, :, 0]
 green_channel = IMG[:, :, 1]
@@ -31,14 +34,14 @@ green_magnitude = np.abs(green_coefficient)
 blue_magnitude = np.abs(blue_coefficient)
 
 # f) g)
-r = 0.001
+R = {0.001, 0.003, 0.01, 0.03}
 # r will be selected in {0.001, 0.003, 0.01, 0.03}
 
-def DFT_Compress_iDFT(Channel, Magnitude_2d):
+def DFT_Compress_iDFT(Channel, Magnitude_2d, compress_ratio):
     Magnitude_1d = Magnitude_2d.ravel()
 
     # h)
-    coefficient_to_keep_ratio = int(r * len(Magnitude_1d))
+    coefficient_to_keep_ratio = int(compress_ratio * len(Magnitude_1d))
     sort_array = np.sort(Magnitude_1d)[::-1]
     coefficient_to_keep = sort_array[coefficient_to_keep_ratio]
 
@@ -61,24 +64,26 @@ def DFT_Compress_iDFT(Channel, Magnitude_2d):
 
 # l)
 
-# Call the compress function for each Color Channel
-red_channel = DFT_Compress_iDFT(Channel=red_coefficient, Magnitude_2d=red_magnitude)
-green_channel = DFT_Compress_iDFT(Channel=green_coefficient, Magnitude_2d=green_magnitude)
-blue_channel = DFT_Compress_iDFT(Channel=blue_coefficient, Magnitude_2d=blue_magnitude)
+for r in R:
+    # Call the compress function for each Color Channel
+    red_channel = DFT_Compress_iDFT(Channel=red_coefficient, Magnitude_2d=red_magnitude, compress_ratio=r)
+    green_channel = DFT_Compress_iDFT(Channel=green_coefficient, Magnitude_2d=green_magnitude, compress_ratio=r)
+    blue_channel = DFT_Compress_iDFT(Channel=blue_coefficient, Magnitude_2d=blue_magnitude, compress_ratio=r)
 
-# Synthesize the new compressed image
-IMG_new = np.stack((red_channel, green_channel, blue_channel), axis=-1)
+    # Synthesize the new compressed image
+    IMG_new = np.stack((red_channel, green_channel, blue_channel), axis=-1)
 
-# Normalize the image
-IMG_new = (IMG_new - IMG_new.min()) / (IMG_new.max() - IMG_new.min())
+    # Normalize the image
+    # IMG_new = (IMG_new - IMG_new.min()) / (IMG_new.max() - IMG_new.min())
+    IMG_new = np.clip(IMG_new, 0, 1)
 
-# Display the image
-plt.imshow(IMG_new)
-plt.show()
+    # Display the image
+    plt.imshow(IMG_new)
+    plt.show()
 
-# Compute the mean squared error between the original and compressed image
-mse = np.mean((IMG - IMG_new) ** 2)
-print('Compress Ratio:', r, 'MSE:', mse)
+    # Compute the mean squared error between the original and compressed image
+    mse = np.mean((IMG - IMG_new) ** 2)
+    print('Compress Ratio:', r, 'MSE:', mse)
 
-# Save the image
-plt.imsave('compressed_image\\baboon_ratio={:.3f}_mse={:.5f}.png'.format(r, mse), IMG_new)
+    # Save the image
+    plt.imsave('compressed_image\\baboon_ratio={:.3f}_mse={:.5f}.png'.format(r, mse), IMG_new)
